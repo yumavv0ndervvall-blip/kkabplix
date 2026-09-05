@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Streaming Card Maker</title>
+<style>
+:root{--panel:#15171b;--line:#2a2d33;--text:#f5f6f8;--muted:#9399a3;--accent:#e50914}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#0b0c0e;color:var(--text);font-family:Arial,"Noto Sans KR",sans-serif}button,input,textarea,select{font:inherit}
+button{user-select:none}.app{display:grid;grid-template-columns:400px 1fr;min-height:100vh}.panel{padding:20px;background:var(--panel);border-right:1px solid var(--line);overflow:auto;max-height:100vh;position:sticky;top:0}.head{display:flex;justify-content:space-between;align-items:start;gap:10px}.eyebrow{font-size:11px;letter-spacing:.15em;color:#aaa}.head h1{margin:5px 0 14px;font-size:22px}.group{border-top:1px solid var(--line);padding:15px 0}.group h2{font-size:13px;margin:0 0 11px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 8px}label{display:flex;flex-direction:column;gap:6px;color:#bdc2ca;font-size:12px;margin-bottom:10px}input[type=text],textarea,select{width:100%;padding:9px 10px;border:1px solid #343941;border-radius:7px;background:#101216;color:#fff;outline:none}input[readonly]{color:#cbd0d7;background:#0d0f12;cursor:default}textarea{min-height:135px;resize:vertical;line-height:1.5}input[type=range]{width:100%;accent-color:#ddd}.upload{display:block;text-align:center;border:1px dashed #4b515a;border-radius:9px;padding:11px;margin-bottom:9px;cursor:pointer;font-size:12px;font-weight:700}.upload input{display:none}.row{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:7px;padding:8px 10px;background:#262a31;color:#fff;cursor:pointer}.btn:hover{background:#30353d}.btn.danger{background:#402126}.primary{width:100%;background:#fff;color:#111;font-weight:800;padding:11px}.primary:hover{background:#ececec}.hint{color:#858b94;font-size:11px;line-height:1.5;margin:7px 0 0}.pickerRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.pickerRow label{margin:0}.pickerBtn{white-space:nowrap;height:36px}.ratingPicker{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.ratingChoice{height:37px;border:2px solid transparent;border-radius:7px;color:#fff;font-weight:800;cursor:pointer;opacity:.62;transition:.15s}.ratingChoice.active{opacity:1;border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.12)}.ratingChoice[data-rating="ALL"]{background:#2f9b55}.ratingChoice[data-rating="12"]{background:#2482c5}.ratingChoice[data-rating="15"]{background:#e58a2b}.ratingChoice[data-rating="18"]{background:#d83a3a}
+.stageWrap{min-width:0;padding:18px}.toolbar{display:flex;justify-content:space-between;color:#8f959d;font-size:12px;padding:0 4px 8px}.stageFrame{border:1px solid #22262d;border-radius:12px;padding:18px;min-height:calc(100vh - 66px);display:flex;align-items:center;justify-content:center;overflow:auto;background:radial-gradient(circle,#181b20,#0b0c0e 70%)}
+.card{position:relative;width:1200px;height:900px;flex:none;overflow:hidden;background:#111;transform-origin:center}.bg{position:absolute;inset:-12%;background:linear-gradient(135deg,#151515,#454545);background-size:cover;background-position:50% 50%;will-change:transform,filter}.shade{position:absolute;inset:0;background:rgba(0,0,0,.45)}.vignette{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.16) 52%,rgba(0,0,0,.2)),linear-gradient(180deg,transparent 0 41%,rgba(0,0,0,.13) 54%,rgba(5,5,5,.84) 82%,#111 100%)}.close{position:absolute;right:24px;top:18px;width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:34px;font-weight:200;background:rgba(0,0,0,.25)}
+.logoHolder{position:absolute;left:64px;top:390px;max-width:620px;max-height:220px;cursor:move;touch-action:none}.logoText{font-size:64px;font-weight:800;letter-spacing:-.04em;line-height:1;white-space:nowrap}.logoImg{display:block;width:auto;height:auto;max-width:620px;max-height:220px;object-fit:contain;object-position:left bottom}.hide{display:none!important}.actions{position:absolute;left:64px;top:500px;display:flex;align-items:center;gap:13px;cursor:move;touch-action:none}.play{height:56px;padding:0 23px;border:0;border-radius:7px;background:#fff;color:#111;display:flex;align-items:center;gap:12px;font-size:21px;font-weight:800}.tri{width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:19px solid #111}.round{width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(20,20,20,.2);color:#fff;font-size:31px}.round.heart{font-size:27px}
+.tagline{position:absolute;left:720px;top:350px;width:330px;font-size:22px;line-height:1.62;font-weight:800;text-shadow:0 2px 7px #000}.meta{position:absolute;left:64px;bottom:72px;width:625px}.metaTop{display:flex;gap:13px;align-items:center;color:#d2d4d8;font-size:18px;margin-bottom:13px}.quality{font-size:13px;border:1px solid #d4d6da;border-radius:3px;padding:1px 5px}.badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}.chip{height:34px;min-width:34px;padding:0 8px;display:grid;place-items:center;background:#050505;border:1px solid rgba(255,255,255,.1);border-radius:3px;font-size:14px}.chip.age{font-weight:800;color:#fff}.chip.age.all{background:#2f9b55}.chip.age.r12{background:#2482c5}.chip.age.r15{background:#e58a2b}.chip.age.r18{background:#d83a3a}.synopsis{margin:0;max-width:625px;font-size:17px;line-height:1.55;font-weight:600;color:#f2f2f2;white-space:pre-wrap;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}.info{position:absolute;right:54px;bottom:79px;width:315px;font-size:16px;line-height:1.58}.info p{margin:0 0 16px;color:#92969c}.info span{color:#72767c}.info strong{color:#f5f5f5;font-weight:600}
+.modalOverlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:24px}.modalOverlay.open{display:flex}.modal{width:min(820px,96vw);max-height:min(760px,90vh);background:#17191e;border:1px solid #333842;border-radius:16px;box-shadow:0 28px 80px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden}.modalHead{display:flex;align-items:start;justify-content:space-between;gap:20px;padding:20px 22px 14px;border-bottom:1px solid #2a2e35}.modalHead h3{margin:0 0 5px;font-size:20px}.modalHead p{margin:0;color:#8f959d;font-size:11px;line-height:1.5}.modalClose{width:36px;height:36px;border-radius:50%;border:1px solid #3c424c;background:#22252b;color:#fff;font-size:24px;cursor:pointer}.modalTools{display:grid;grid-template-columns:1fr auto;gap:9px;padding:14px 22px;border-bottom:1px solid #2a2e35}.modalTools input{margin:0}.modalBody{padding:6px 22px 18px;overflow:auto}.keywordGroup{padding:15px 0 4px;border-bottom:1px solid #252932}.keywordGroup:last-child{border:0}.keywordGroup h4{font-size:12px;color:#aeb4bd;margin:0 0 10px}.keywordGrid{display:flex;flex-wrap:wrap;gap:7px}.keyword{border:1px solid #383e48;background:#101216;color:#cfd3da;border-radius:999px;padding:7px 10px;font-size:12px;cursor:pointer}.keyword:hover{border-color:#666e7a}.keyword.selected{background:#f0f0f0;color:#111;border-color:#fff;font-weight:700}.modalCustom{display:grid;grid-template-columns:1fr auto;gap:8px;padding:14px 22px;border-top:1px solid #2a2e35}.modalFoot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;border-top:1px solid #2a2e35}.selectedCount{font-size:12px;color:#aeb4bd}.footBtns{display:flex;gap:8px}.applyBtn{background:#fff;color:#111;font-weight:800}.clearBtn{white-space:nowrap}
+@media(max-width:1050px){.app{grid-template-columns:1fr}.panel{position:relative;max-height:none;border-right:0;border-bottom:1px solid var(--line)}.stageFrame{min-height:auto}}@media(max-width:620px){.panel{padding:14px}.grid2,.grid3{grid-template-columns:1fr}.pickerRow{grid-template-columns:1fr}.ratingPicker{grid-template-columns:repeat(2,1fr)}.stageWrap{padding:8px}.stageFrame{padding:8px}.modalTools,.modalCustom{grid-template-columns:1fr}.modal{max-height:92vh}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <div class="head"><div><div class="eyebrow">STREAMING CARD MAKER</div><h1>상세 화면 메이커</h1></div><button class="btn" id="resetBtn">초기화</button></div>
+
+    <section class="group"><h2>이미지</h2>
+      <label class="upload">배경 이미지 업로드<input id="bgUpload" type="file" accept="image/*"></label>
+      <label class="upload">제목 로고 이미지 업로드<input id="logoUpload" type="file" accept="image/*"></label>
+      <button class="btn" id="removeLogoBtn">로고 제거</button>
+    </section>
+
+    <section class="group grid2">
+      <label>배경 X<input id="bgX" type="range" min="0" max="100" value="50"></label>
+      <label>배경 Y<input id="bgY" type="range" min="0" max="100" value="50"></label>
+      <label>배경 확대<input id="bgZoom" type="range" min="100" max="180" value="100"></label>
+      <label>어둡기<input id="overlay" type="range" min="0" max="85" value="45"></label>
+      <label>블러<input id="blur" type="range" min="0" max="12" value="0"></label>
+      <label>로고 X<input id="logoX" type="range" min="0" max="1400" value="64"></label>
+      <label>로고 Y<input id="logoY" type="range" min="80" max="1000" value="390"></label>
+      <label>버튼 X<input id="actionX" type="range" min="0" max="1400" value="64"></label>
+      <label>버튼 Y<input id="actionY" type="range" min="100" max="1100" value="500"></label>
+      <label>캐치프레이즈 Y<input id="tagY" type="range" min="250" max="900" value="350"></label>
+      <div class="hint" style="grid-column:1/-1">로고랑 버튼은 미리보기에서 직접 드래그해서 옮겨도 돼.</div>
+    </section>
+
+    <section class="group"><h2>기본 정보</h2>
+      <label>캐치프레이즈<input id="tagline" type="text" value="내 인생의 행운은 전부 요리 덕에 찾아왔다"></label>
+      <div class="grid3"><label>연도<input id="year" type="text" value="2014"></label><label>러닝타임<input id="runtime" type="text" value="1시간 54분"></label><label>화질<input id="quality" type="text" value="HD"></label></div>
+      <label>관람 등급</label>
+      <div class="ratingPicker" id="ratingPicker">
+        <button type="button" class="ratingChoice" data-rating="ALL">ALL</button>
+        <button type="button" class="ratingChoice" data-rating="12">12</button>
+        <button type="button" class="ratingChoice active" data-rating="15">15</button>
+        <button type="button" class="ratingChoice" data-rating="18">18</button>
+      </div>
+      <input id="ageRating" type="hidden" value="15">
+      <label style="margin-top:11px">하단 배지/로고<input id="extraBadges" type="text" value="?,⌁,♬,◉,●"></label>
+      <div class="hint" style="margin:-3px 0 10px">배지는 쉼표로 구분. 예: 폭력,공포,음악</div>
+      <label>줄거리<textarea id="synopsis" rows="7">창의력이 지글지글 끓어오르는 셰프. 똑같은 메뉴만 고집하는 주인과 지지고 볶은 후 허름한 푸드트럭을 차리면서 맛깔나는 좌충우돌 여정에 오른다. 낡은 트럭과 함께 길 위를 떠돌며 새로운 맛과 사람, 실패와 우정을 차곡차곡 끓여내는 동안 한때 잃어버렸던 자존감과 열정도 다시 살아난다. 배고플 땐 보지 말 것!</textarea></label>
+    </section>
+
+    <section class="group"><h2>오른쪽 정보</h2>
+      <label>출연<input id="cast" type="text" value="존 파브로, 소피아 베르가라, 존 레귀자모"></label>
+      <div class="pickerRow">
+        <label>장르<input id="genres" type="text" readonly value="미국 작품, 코미디 영화, 인디 영화"></label>
+        <button class="btn pickerBtn" id="pickGenres" type="button">선택하기</button>
+      </div>
+      <div class="pickerRow" style="margin-top:10px">
+        <label>작품 특징<input id="features" type="text" readonly value="힐링, 진심이 통하는, 진심 어린"></label>
+        <button class="btn pickerBtn" id="pickFeatures" type="button">선택하기</button>
+      </div>
+      <p class="hint">팝업에서 검색하고 여러 개를 골라 적용할 수 있어. 직접 만든 키워드도 추가 가능.</p>
+    </section>
+
+    <section class="group"><h2>출력</h2>
+      <div class="grid2"><label>비율<select id="ratio"><option value="1200x900">4:3 (1200×900)</option><option value="1600x900">16:9 (1600×900)</option><option value="1080x1350">4:5 (1080×1350)</option></select></label><label>파일명<input id="filename" type="text" value="streaming-card"></label></div>
+      <button class="btn primary" id="exportBtn">PNG로 저장</button>
+    </section>
+  </aside>
+
+  <main class="stageWrap"><div class="toolbar"><span>실시간 미리보기</span><span id="sizeLabel">1200 × 900</span></div><div class="stageFrame">
+    <article class="card" id="card">
+      <div class="bg" id="bg"></div><div class="shade" id="shade"></div><div class="vignette"></div><div class="close">×</div>
+      <div class="logoHolder" id="logoHolder"><div class="logoText" id="logoText">TITLE LOGO</div><img class="logoImg hide" id="logoImg" alt="logo"></div><div class="actions" id="actions"><button class="play"><span class="tri"></span>재생</button><button class="round">＋</button><button class="round heart">♡</button></div>
+      <div class="tagline" id="taglineOut"></div>
+      <div class="meta"><div class="metaTop"><span id="yearOut"></span><span id="runtimeOut"></span><span class="quality" id="qualityOut"></span></div><div class="badges" id="badges"></div><p class="synopsis" id="synopsisOut"></p></div>
+      <div class="info"><p><span>출연:</span> <strong id="castOut"></strong></p><p><span>장르:</span> <strong id="genresOut"></strong></p><p><span>작품 특징:</span> <strong id="featuresOut"></strong></p></div>
+    </article>
+  </div></main>
+</div>
+
+<div class="modalOverlay" id="keywordOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="keywordTitle">
+    <div class="modalHead">
+      <div><h3 id="keywordTitle">키워드 선택</h3><p>넷플릭스 한국 상세 페이지/장르 페이지에서 쓰이는 표기를 바탕으로 정리했어. 지역과 시기에 따라 표기는 달라질 수 있어.</p></div>
+      <button class="modalClose" id="modalClose" type="button">×</button>
+    </div>
+    <div class="modalTools"><input id="keywordSearch" type="text" placeholder="키워드 검색"><button class="btn clearBtn" id="clearKeywords" type="button">선택 해제</button></div>
+    <div class="modalBody" id="keywordBody"></div>
+    <div class="modalCustom"><input id="customKeyword" type="text" placeholder="목록에 없는 키워드 직접 추가"><button class="btn" id="addCustomKeyword" type="button">추가</button></div>
+    <div class="modalFoot"><span class="selectedCount" id="selectedCount">0개 선택</span><div class="footBtns"><button class="btn" id="modalCancel" type="button">취소</button><button class="btn applyBtn" id="modalApply" type="button">적용</button></div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const st={bgData:'',logoData:'',ratio:'1200x900'};
+const defaults={tagline:'내 인생의 행운은 전부 요리 덕에 찾아왔다',year:'2014',runtime:'1시간 54분',quality:'HD',ageRating:'15',extraBadges:'?,⌁,♬,◉,●',synopsis:'창의력이 지글지글 끓어오르는 셰프. 똑같은 메뉴만 고집하는 주인과 지지고 볶은 후 허름한 푸드트럭을 차리면서 맛깔나는 좌충우돌 여정에 오른다. 낡은 트럭과 함께 길 위를 떠돌며 새로운 맛과 사람, 실패와 우정을 차곡차곡 끓여내는 동안 한때 잃어버렸던 자존감과 열정도 다시 살아난다. 배고플 땐 보지 말 것!',cast:'존 파브로, 소피아 베르가라, 존 레귀자모',genres:'미국 작품, 코미디 영화, 인디 영화',features:'힐링, 진심이 통하는, 진심 어린'};
+
+const GENRE_GROUPS={
+  '영화 장르':['액션 & 어드벤처 영화','코미디 영화','로맨틱한 영화','스릴러 영화','미스터리 영화','호러 영화','SF 영화','판타지 영화','범죄 영화','드라마 영화','청춘 영화','인디 영화','가족 영화','어린이 & 가족 영화','음악 영화','스포츠 영화','전쟁 영화','서부 영화','정치 영화','애니메이션 영화','다큐멘터리 영화','진한 여운을 남기는 영화','사회 이슈를 다루는 드라마 장르 영화','실화 바탕 영화','도서 원작 영화','시대물'],
+  '시리즈 장르':['드라마','한국 드라마','로맨틱한 드라마','코미디 시리즈','로맨틱 코미디 시리즈','스릴러 시리즈','미스터리 시리즈','범죄 시리즈','범죄 사건을 다루는 콘텐츠','SF 시리즈','판타지 시리즈','액션 & 어드벤처 시리즈','청춘 드라마','하이틴 시리즈','가족 시리즈','키즈 시리즈','리얼리티 시리즈','음식 & 여행 시리즈','스포츠','다큐멘터리 시리즈','애니메이션 TV 프로그램','일본 애니메이션 시리즈','사회 문제를 다룬 드라마','도서 원작 시리즈'],
+  '코미디/로맨스 세부':['로맨틱 코미디','다크 코미디','스탠드업 코미디','시트콤','로맨스','로맨틱 드라마','청춘 로맨스','LGBTQ+ 영화','LGBTQ+ 시리즈'],
+  '다큐/리얼리티 세부':['범죄 실화 다큐멘터리','범죄 실화 다큐시리즈','역사 다큐멘터리','자연 & 생태 다큐멘터리','사회 & 문화 다큐멘터리','과학 & 자연 다큐멘터리','스포츠 다큐멘터리','음악 다큐멘터리','여행 & 어드벤처 다큐멘터리','경쟁 리얼리티 시리즈','연애 리얼리티 시리즈','라이프스타일 리얼리티 시리즈'],
+  '국가/지역':['한국 작품','미국 작품','일본 작품','중국 작품','영국 작품','프랑스 작품','스페인 작품','독일 작품','이탈리아 작품','튀르키예 작품','남아공 작품','인도 작품','브라질 작품','멕시코 작품','콜롬비아 작품','아르헨티나 작품','호주 작품','캐나다 작품','북유럽 작품','유럽 작품','아시아 작품','라틴 아메리카 작품','할리우드 영화']
+};
+const FEATURE_GROUPS={
+  '분위기/톤':['힐링','기분 좋아지는','진심 어린','진심이 통하는','감상적','감정을 파고드는','로맨틱','설렘주의','흥미진진','긴장감 넘치는','긴박감 넘치는','어두운','불길한','무서운','미스터리','스릴러','강렬한 비주얼','기발한','유쾌한','엉뚱한','따뜻한','잔잔한','감동적인','도발적인','관능적','냉소적','예측 불허','가슴 뭉클한'],
+  '서사/관계':['가족 간의 이야기','우정','남자들의 우정','여자들의 우정','첫사랑','재회하는 연인','불후의 사랑','금지된 사랑','사랑과 집착 사이','거부할 수 없는 이끌림','그들만의 비밀','심리 게임','점입가경 스릴러','쫓고 쫓기는','시간과의 싸움','복수','성장','생존','구원','배신','삼각관계','결혼','부모 되기','또 다른 주인공','멀티캐스팅','청춘극','청소년'],
+  '소재/배경':['시간 여행','SF 미스터리','초자연 현상','가상현실','사탄','경찰','수사','스파이','정치','부패','부패 경찰','강도','도주','야생에서 살아남기','고등학교 배경 콘텐츠','쇼비즈','요리','음식','음악','OST','스포츠','법정','의학','직장','군대','전쟁','왕실','역사','범죄','연쇄 살인','괴물','좀비','마법','우주','디스토피아','재난','여행','학교','가족','로봇','인공지능'],
+  '형식/원작/평가':['실화 바탕','시대극','도서 원작','웹 소설 원작','웹툰 원작','만화 원작','게임 원작','리메이크','리미티드 시리즈','한국 예능','리얼리티','유익한 콘텐츠','평단의 찬사를 받은','백상예술대상','백상예술대상 후보작','에미상 후보작','수상작','독립','영화','시리즈'],
+  '정체성/지역':['한국 작품','미국 작품','일본 작품','중국 작품','영국 작품','프랑스 작품','스페인 작품','독일 작품','이탈리아 작품','튀르키예 작품','남아공 작품','인도 작품','LGBTQ+']
+};
+
+function syncText(id){const out=$(id+'Out');if(out)out.textContent=$(id).value}
+['year','runtime','quality','cast','genres','features'].forEach(id=>{$(id).addEventListener('input',()=>syncText(id));syncText(id)});
+function syncTag(){const t=$('tagline').value.trim();if(t.length>18){let m=Math.ceil(t.length*.48),i=t.lastIndexOf(' ',m);if(i<4)i=t.indexOf(' ',m);$('taglineOut').innerHTML=i>0?esc(t.slice(0,i))+'<br>'+esc(t.slice(i+1)):esc(t)}else $('taglineOut').textContent=t}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('tagline').addEventListener('input',syncTag);syncTag();
+$('synopsis').addEventListener('input',()=>$('synopsisOut').textContent=$('synopsis').value);$('synopsisOut').textContent=$('synopsis').value;
+
+function setRating(value){$('ageRating').value=value;document.querySelectorAll('.ratingChoice').forEach(b=>b.classList.toggle('active',b.dataset.rating===value));badges()}
+document.querySelectorAll('.ratingChoice').forEach(b=>b.addEventListener('click',()=>setRating(b.dataset.rating)));
+function badges(){const box=$('badges');box.innerHTML='';const rating=$('ageRating').value||'15';const age=document.createElement('span');age.className='chip age '+(rating==='ALL'?'all':'r'+rating);age.textContent=rating;box.appendChild(age);$('extraBadges').value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,6).forEach(x=>{const s=document.createElement('span');s.className='chip';s.textContent=x;box.appendChild(s)})}
+$('extraBadges').addEventListener('input',badges);badges();
+
+function file(input,cb){input.addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)})}
+file($('bgUpload'),d=>{st.bgData=d;$('bg').style.backgroundImage=`url("${d}")`});
+file($('logoUpload'),d=>{st.logoData=d;$('logoImg').src=d;$('logoImg').classList.remove('hide');$('logoText').classList.add('hide')});
+$('removeLogoBtn').onclick=()=>{st.logoData='';$('logoImg').src='';$('logoImg').classList.add('hide');$('logoText').classList.remove('hide');$('logoUpload').value=''};
+
+function range(id,fn){$(id).addEventListener('input',()=>fn(+$(id).value));fn(+$(id).value)}
+range('bgX',()=>bgStyle());range('bgY',()=>bgStyle());range('bgZoom',()=>bgStyle());range('blur',()=>bgStyle());
+range('overlay',v=>$('shade').style.background=`rgba(0,0,0,${v/100})`);
+range('logoX',v=>$('logoHolder').style.left=v+'px');
+range('logoY',v=>$('logoHolder').style.top=v+'px');
+range('actionX',v=>$('actions').style.left=v+'px');
+range('actionY',v=>$('actions').style.top=v+'px');
+range('tagY',v=>$('taglineOut').style.top=v+'px');
+function makeDraggable(el,xInput,yInput){
+  let startX=0,startY=0,startLeft=0,startTop=0,dragging=false;
+  el.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button')) return;
+    dragging=true;startX=e.clientX;startY=e.clientY;
+    startLeft=parseFloat(getComputedStyle(el).left)||0;startTop=parseFloat(getComputedStyle(el).top)||0;
+    el.setPointerCapture?.(e.pointerId);e.preventDefault();
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const card=$('card');
+    const matrix=new DOMMatrixReadOnly(getComputedStyle(card).transform);
+    const scale=matrix.a||1;
+    const x=Math.round(startLeft+(e.clientX-startX)/scale);
+    const y=Math.round(startTop+(e.clientY-startY)/scale);
+    el.style.left=x+'px';el.style.top=y+'px';
+    $(xInput).value=Math.max(+$(xInput).min,Math.min(+$(xInput).max,x));
+    $(yInput).value=Math.max(+$(yInput).min,Math.min(+$(yInput).max,y));
+  });
+  const stop=e=>{if(!dragging)return;dragging=false;try{el.releasePointerCapture?.(e.pointerId)}catch(_){}};
+  el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);
+}
+makeDraggable($('logoHolder'),'logoX','logoY');
+makeDraggable($('actions'),'actionX','actionY');
+function bgStyle(){$('bg').style.backgroundPosition=$('bgX').value+'% '+$('bgY').value+'%';$('bg').style.transform=`scale(${$('bgZoom').value/100})`;$('bg').style.filter=`blur(${$('blur').value}px)`}
+
+function ratio(v){st.ratio=v;const [w,h]=v.split('x').map(Number);$('card').style.width=w+'px';$('card').style.height=h+'px';$('sizeLabel').textContent=w+' × '+h;fit()}
+$('ratio').addEventListener('change',()=>ratio($('ratio').value));
+function fit(){const frame=document.querySelector('.stageFrame'),card=$('card'),[w,h]=st.ratio.split('x').map(Number);const sc=Math.min(Math.max(250,frame.clientWidth-40)/w,Math.max(250,window.innerHeight-110)/h,1);card.style.transform=`scale(${sc})`;card.style.margin=`${-(h*(1-sc))/2}px ${-(w*(1-sc))/2}px`}
+window.addEventListener('resize',fit);
+
+let modalMode='genres', tempSelection=new Set();
+function currentGroups(){return modalMode==='genres'?GENRE_GROUPS:FEATURE_GROUPS}
+function sourceInput(){return modalMode==='genres'?$('genres'):$('features')}
+function openKeywordModal(mode){modalMode=mode;tempSelection=new Set(sourceInput().value.split(',').map(v=>v.trim()).filter(Boolean));$('keywordTitle').textContent=mode==='genres'?'장르 선택':'작품 특징 선택';$('keywordSearch').value='';$('customKeyword').value='';renderKeywords();$('keywordOverlay').classList.add('open');$('keywordOverlay').setAttribute('aria-hidden','false');setTimeout(()=>$('keywordSearch').focus(),30)}
+function closeKeywordModal(){$('keywordOverlay').classList.remove('open');$('keywordOverlay').setAttribute('aria-hidden','true')}
+function renderKeywords(){const body=$('keywordBody'),q=$('keywordSearch').value.trim().toLowerCase(),groups=currentGroups();body.innerHTML='';Object.entries(groups).forEach(([group,items])=>{const filtered=items.filter(x=>!q||x.toLowerCase().includes(q));if(!filtered.length)return;const wrap=document.createElement('section');wrap.className='keywordGroup';const h=document.createElement('h4');h.textContent=group;wrap.appendChild(h);const grid=document.createElement('div');grid.className='keywordGrid';filtered.forEach(word=>{const b=document.createElement('button');b.type='button';b.className='keyword'+(tempSelection.has(word)?' selected':'');b.textContent=word;b.addEventListener('click',()=>{tempSelection.has(word)?tempSelection.delete(word):tempSelection.add(word);renderKeywords()});grid.appendChild(b)});wrap.appendChild(grid);body.appendChild(wrap)});$('selectedCount').textContent=tempSelection.size+'개 선택'}
+$('pickGenres').onclick=()=>openKeywordModal('genres');$('pickFeatures').onclick=()=>openKeywordModal('features');$('modalClose').onclick=closeKeywordModal;$('modalCancel').onclick=closeKeywordModal;$('keywordOverlay').addEventListener('click',e=>{if(e.target===$('keywordOverlay'))closeKeywordModal()});$('keywordSearch').addEventListener('input',renderKeywords);$('clearKeywords').onclick=()=>{tempSelection.clear();renderKeywords()};
+$('addCustomKeyword').onclick=()=>{const v=$('customKeyword').value.trim();if(!v)return;tempSelection.add(v);$('customKeyword').value='';renderKeywords()};$('customKeyword').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('addCustomKeyword').click()}});
+$('modalApply').onclick=()=>{sourceInput().value=[...tempSelection].join(', ');sourceInput().dispatchEvent(new Event('input'));closeKeywordModal()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('keywordOverlay').classList.contains('open'))closeKeywordModal()});
+
+function apply(d){d={...defaults,...d};['tagline','year','runtime','quality','extraBadges','synopsis','cast','genres','features','filename'].forEach(id=>{if($(id)&&d[id]!=null)$(id).value=d[id]});if(d.ageRating)setRating(d.ageRating);['bgX','bgY','bgZoom','overlay','blur','logoX','logoY','actionX','actionY','tagY'].forEach(id=>{if(d[id]!=null)$(id).value=d[id]});if(d.ratio)$('ratio').value=d.ratio;if(d.bgData){st.bgData=d.bgData;$('bg').style.backgroundImage=`url("${d.bgData}")`}else if(d.bgData===''){st.bgData='';$('bg').style.backgroundImage='linear-gradient(135deg,#151515,#454545)'}if(d.logoData){st.logoData=d.logoData;$('logoImg').src=d.logoData;$('logoImg').classList.remove('hide');$('logoText').classList.add('hide')}else if(d.logoData===''){st.logoData='';$('logoImg').src='';$('logoImg').classList.add('hide');$('logoText').classList.remove('hide')}['year','runtime','quality','cast','genres','features'].forEach(syncText);syncTag();$('synopsisOut').textContent=$('synopsis').value;badges();bgStyle();$('shade').style.background=`rgba(0,0,0,${$('overlay').value/100})`;$('logoHolder').style.left=$('logoX').value+'px';$('logoHolder').style.top=$('logoY').value+'px';$('actions').style.left=$('actionX').value+'px';$('actions').style.top=$('actionY').value+'px';$('taglineOut').style.top=$('tagY').value+'px';ratio($('ratio').value)}
+$('resetBtn').onclick=()=>{apply({...defaults,filename:'streaming-card',ratio:'1200x900',bgX:50,bgY:50,bgZoom:100,overlay:45,blur:0,logoX:64,logoY:390,actionX:64,actionY:500,tagY:350,bgData:'',logoData:''});$('bgUpload').value='';$('logoUpload').value=''};
+$('exportBtn').onclick=async()=>{if(!window.html2canvas)return alert('PNG 저장 라이브러리를 불러오지 못했어.');const b=$('exportBtn'),old=b.textContent,card=$('card'),tr=card.style.transform,mg=card.style.margin;b.disabled=true;b.textContent='이미지 만드는 중…';card.style.transform='none';card.style.margin='0';try{const c=await html2canvas(card,{backgroundColor:'#111',scale:1,useCORS:true,logging:false});const a=document.createElement('a');a.download=(($('filename').value||'streaming-card').replace(/[\\/:*?"<>|]+/g,'_'))+'.png';a.href=c.toDataURL('image/png');a.click()}catch(e){console.error(e);alert('PNG 저장 중 오류가 났어.')}finally{card.style.transform=tr;card.style.margin=mg;b.disabled=false;b.textContent=old}};
+setRating('15');ratio('1200x900');setTimeout(fit,50);
+})();
+</script>
+</body>
+</html>
