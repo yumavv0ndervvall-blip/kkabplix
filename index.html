@@ -50,7 +50,7 @@
           <input id="blur" type="range" min="0" max="12" value="0" />
         </label>
         <label>로고 크기
-          <input id="logoSize" type="range" min="18" max="60" value="42" />
+          <input id="logoSize" type="range" min="18" max="70" value="42" />
         </label>
       </section>
 
@@ -64,11 +64,17 @@
           <label>러닝타임<input id="runtime" type="text" value="1시간 54분" /></label>
           <label>화질<input id="quality" type="text" value="HD" /></label>
         </div>
-        <label>추천 문구
-          <input id="recommend" type="text" value="시청자 추천" />
-        </label>
+        <div class="grid-2">
+          <label>연령 등급
+            <input id="ageRating" type="text" value="15" />
+          </label>
+          <label>하단 배지 / 로고
+            <input id="extraBadges" type="text" value="?,⌁,♬,◉,●" />
+          </label>
+        </div>
+        <p class="sub-hint">쉼표로 구분해서 입력하면 하단 작은 배지가 바뀌어. 예: 19,폭력,공포,음악</p>
         <label>줄거리
-          <textarea id="synopsis" rows="4">창의력이 지글지글 끓어오르는 셰프. 똑같은 메뉴만 고집하는 주인과 지지고 볶은 후 허름한 푸드트럭을 차리면서 맛깔나는 좌충우돌 여정에 오른다. 배고플 땐 보지 말 것!</textarea>
+          <textarea id="synopsis" rows="7">창의력이 지글지글 끓어오르는 셰프. 똑같은 메뉴만 고집하는 주인과 지지고 볶은 후 허름한 푸드트럭을 차리면서 맛깔나는 좌충우돌 여정에 오른다. 낡은 트럭과 함께 길 위를 떠돌며 새로운 맛과 사람, 실패와 우정을 차곡차곡 끓여내는 동안 한때 잃어버렸던 자존감과 열정도 다시 살아난다. 배고플 땐 보지 말 것!</textarea>
         </label>
       </section>
 
@@ -83,6 +89,26 @@
         <label>작품 특징
           <input id="features" type="text" value="힐링, 진심이 통하는, 진심 어린" />
         </label>
+      </section>
+
+      <section class="control-group">
+        <h2>프리셋 저장</h2>
+        <div class="grid-2 compact">
+          <label>프리셋 이름
+            <input id="presetName" type="text" placeholder="예: 카인 버전" />
+          </label>
+          <label>저장된 프리셋
+            <select id="presetSelect">
+              <option value="">프리셋 선택</option>
+            </select>
+          </label>
+        </div>
+        <div class="btn-row">
+          <button id="savePresetBtn" class="mini-btn" type="button">저장</button>
+          <button id="loadPresetBtn" class="mini-btn" type="button">불러오기</button>
+          <button id="deletePresetBtn" class="mini-btn danger" type="button">삭제</button>
+        </div>
+        <p class="hint">프리셋은 브라우저에 저장돼. 이미지까지 저장하려다 용량이 넘치면 텍스트/설정만 저장해.</p>
       </section>
 
       <section class="control-group">
@@ -141,8 +167,8 @@
               <span id="qualityOut" class="quality-badge">HD</span>
             </div>
 
-            <div class="rating-icons">
-              <span class="rating-chip orange">15</span>
+            <div id="ratingIcons" class="rating-icons">
+              <span id="ageRatingOut" class="rating-chip orange">15</span>
               <span class="rating-chip">?</span>
               <span class="rating-chip">⌁</span>
               <span class="rating-chip">♬</span>
@@ -150,7 +176,6 @@
               <span class="rating-chip">●</span>
             </div>
 
-            <div class="recommend-line"><span class="red-square">★</span><strong id="recommendOut">시청자 추천</strong></div>
             <p id="synopsisOut" class="synopsis"></p>
           </div>
 
@@ -159,8 +184,6 @@
             <p><span>장르:</span> <strong id="genresOut"></strong></p>
             <p><span>작품 특징:</span> <strong id="featuresOut"></strong></p>
           </div>
-
-          <div class="sound-btn">⌁</div>
         </article>
       </div>
     </main>

@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const PRESET_KEY = 'streamingCardMakerPresets';
 
 const state = {
   bgData: '',
@@ -17,8 +18,9 @@ const defaults = {
   year: '2014',
   runtime: '1시간 54분',
   quality: 'HD',
-  recommend: '시청자 추천',
-  synopsis: '창의력이 지글지글 끓어오르는 셰프. 똑같은 메뉴만 고집하는 주인과 지지고 볶은 후 허름한 푸드트럭을 차리면서 맛깔나는 좌충우돌 여정에 오른다. 배고플 땐 보지 말 것!',
+  ageRating: '15',
+  extraBadges: '?,⌁,♬,◉,●',
+  synopsis: '창의력이 지글지글 끓어오르는 셰프. 똑같은 메뉴만 고집하는 주인과 지지고 볶은 후 허름한 푸드트럭을 차리면서 맛깔나는 좌충우돌 여정에 오른다. 낡은 트럭과 함께 길 위를 떠돌며 새로운 맛과 사람, 실패와 우정을 차곡차곡 끓여내는 동안 한때 잃어버렸던 자존감과 열정도 다시 살아난다. 배고플 땐 보지 말 것!',
   cast: '존 파브로, 소피아 베르가라, 존 레귀자모',
   genres: '미국 작품, 코미디 영화, 인디 영화',
   features: '힐링, 진심이 통하는, 진심 어린'
@@ -32,7 +34,7 @@ function setText(inId, outId) {
   sync();
 }
 
-['year','runtime','quality','recommend','cast','genres','features'].forEach(id => setText(id, id + 'Out'));
+['year','runtime','quality','cast','genres','features','ageRating'].forEach(id => setText(id, id + 'Out'));
 
 $('synopsis').addEventListener('input', () => $('synopsisOut').textContent = $('synopsis').value);
 $('synopsisOut').textContent = $('synopsis').value;
@@ -126,17 +128,208 @@ function fitPreview(){
 }
 window.addEventListener('resize', fitPreview);
 
+function updateBadges(){
+  const container = $('ratingIcons');
+  container.innerHTML = '';
+
+  const ageChip = document.createElement('span');
+  ageChip.id = 'ageRatingOut';
+  ageChip.className = 'rating-chip orange';
+  ageChip.textContent = $('ageRating').value || '15';
+  container.appendChild(ageChip);
+
+  const extras = $('extraBadges').value
+    .split(',')
+    .map(v => v.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  extras.forEach(item => {
+    const chip = document.createElement('span');
+    chip.className = 'rating-chip';
+    chip.textContent = item;
+    container.appendChild(chip);
+  });
+}
+$('extraBadges').addEventListener('input', updateBadges);
+$('ageRating').addEventListener('input', updateBadges);
+updateBadges();
+
+function collectFormData(){
+  return {
+    tagline: $('tagline').value,
+    year: $('year').value,
+    runtime: $('runtime').value,
+    quality: $('quality').value,
+    ageRating: $('ageRating').value,
+    extraBadges: $('extraBadges').value,
+    synopsis: $('synopsis').value,
+    cast: $('cast').value,
+    genres: $('genres').value,
+    features: $('features').value,
+    ratio: $('ratio').value,
+    filename: $('filename').value,
+    bgX: Number($('bgX').value),
+    bgY: Number($('bgY').value),
+    bgZoom: Number($('bgZoom').value),
+    overlay: Number($('overlay').value),
+    blur: Number($('blur').value),
+    logoSize: Number($('logoSize').value),
+    bgData: state.bgData,
+    logoData: state.logoData
+  };
+}
+
+function applyFormData(data){
+  const all = {...defaults, ...data};
+  ['tagline','year','runtime','quality','ageRating','extraBadges','synopsis','cast','genres','features','filename'].forEach(id => {
+    if(all[id] !== undefined && $(id)) $(id).value = all[id];
+  });
+  if (all.ratio) $('ratio').value = all.ratio;
+  if (all.bgX !== undefined) $('bgX').value = all.bgX;
+  if (all.bgY !== undefined) $('bgY').value = all.bgY;
+  if (all.bgZoom !== undefined) $('bgZoom').value = all.bgZoom;
+  if (all.overlay !== undefined) $('overlay').value = all.overlay;
+  if (all.blur !== undefined) $('blur').value = all.blur;
+  if (all.logoSize !== undefined) $('logoSize').value = all.logoSize;
+
+  state.bgX = Number($('bgX').value);
+  state.bgY = Number($('bgY').value);
+  state.bgZoom = Number($('bgZoom').value);
+  state.overlay = Number($('overlay').value);
+  state.blur = Number($('blur').value);
+  state.logoSize = Number($('logoSize').value);
+
+  if (all.bgData) {
+    state.bgData = all.bgData;
+    $('bgLayer').style.backgroundImage = `url(${all.bgData})`;
+  }
+
+  if (all.logoData) {
+    state.logoData = all.logoData;
+    $('logoPreview').src = all.logoData;
+    $('logoPreview').classList.remove('hidden');
+    $('logoPlaceholder').classList.add('hidden');
+  } else if (all.logoData === '') {
+    state.logoData = '';
+    $('logoPreview').src = '';
+    $('logoPreview').classList.add('hidden');
+    $('logoPlaceholder').classList.remove('hidden');
+  }
+
+  ['year','runtime','quality','cast','genres','features'].forEach(id => $(id).dispatchEvent(new Event('input')));
+  $('synopsis').dispatchEvent(new Event('input'));
+  $('tagline').dispatchEvent(new Event('input'));
+  updateBadges();
+  $('darkLayer').style.background = `rgba(0,0,0,${state.overlay/100})`;
+  $('logoPreview').style.width = `${state.logoSize}%`;
+  updateBg();
+  applyRatio($('ratio').value);
+}
+
+function loadPresetMap(){
+  try {
+    return JSON.parse(localStorage.getItem(PRESET_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function savePresetMap(map){
+  localStorage.setItem(PRESET_KEY, JSON.stringify(map));
+}
+
+function refreshPresetOptions(selected=''){
+  const select = $('presetSelect');
+  const presets = loadPresetMap();
+  select.innerHTML = '<option value="">프리셋 선택</option>';
+  Object.keys(presets).sort().forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    if (name === selected) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+$('savePresetBtn').addEventListener('click', () => {
+  const name = $('presetName').value.trim() || prompt('프리셋 이름을 입력해줘.');
+  if (!name) return;
+
+  const presets = loadPresetMap();
+  const payload = collectFormData();
+
+  try {
+    presets[name] = payload;
+    savePresetMap(presets);
+    refreshPresetOptions(name);
+    $('presetName').value = name;
+    alert(`"${name}" 프리셋 저장 완료!`);
+  } catch (err) {
+    try {
+      presets[name] = {...payload, bgData:'', logoData:''};
+      savePresetMap(presets);
+      refreshPresetOptions(name);
+      $('presetName').value = name;
+      alert('이미지 용량이 커서 텍스트/설정만 저장했어.');
+    } catch (err2) {
+      console.error(err2);
+      alert('프리셋 저장에 실패했어. 다른 프리셋을 지우거나 이미지 없이 저장해줘.');
+    }
+  }
+});
+
+$('loadPresetBtn').addEventListener('click', () => {
+  const name = $('presetSelect').value;
+  if (!name) {
+    alert('불러올 프리셋을 먼저 선택해줘.');
+    return;
+  }
+  const presets = loadPresetMap();
+  if (!presets[name]) return;
+  applyFormData(presets[name]);
+  $('presetName').value = name;
+});
+
+$('deletePresetBtn').addEventListener('click', () => {
+  const name = $('presetSelect').value || $('presetName').value.trim();
+  if (!name) {
+    alert('삭제할 프리셋 이름을 선택해줘.');
+    return;
+  }
+  const presets = loadPresetMap();
+  if (!presets[name]) {
+    alert('해당 이름의 프리셋이 없어.');
+    return;
+  }
+  if (!confirm(`"${name}" 프리셋을 삭제할까?`)) return;
+  delete presets[name];
+  savePresetMap(presets);
+  refreshPresetOptions();
+  $('presetName').value = '';
+});
+
+$('presetSelect').addEventListener('change', () => {
+  if ($('presetSelect').value) $('presetName').value = $('presetSelect').value;
+});
+
 $('resetBtn').addEventListener('click', () => {
   Object.entries(defaults).forEach(([k,v]) => { if($(k)) $(k).value = v; });
+  $('filename').value = 'streaming-card';
+  $('ratio').value = '1200x900';
   $('bgX').value = 50; $('bgY').value = 50; $('bgZoom').value = 100; $('overlay').value = 52; $('blur').value = 0; $('logoSize').value = 42;
-  state.bgX=50; state.bgY=50; state.bgZoom=100; state.overlay=52; state.blur=0; state.logoSize=42;
+  state.bgX=50; state.bgY=50; state.bgZoom=100; state.overlay=52; state.blur=0; state.logoSize=42; state.ratio='1200x900';
+  state.bgData = '';
+  state.logoData = '';
   $('bgLayer').style.backgroundImage = 'linear-gradient(135deg,#24282e,#777)';
   $('bgUpload').value='';
   $('logoUpload').value='';
   $('logoPreview').src=''; $('logoPreview').classList.add('hidden'); $('logoPlaceholder').classList.remove('hidden');
   updateBg(); $('darkLayer').style.background='rgba(0,0,0,.52)'; $('logoPreview').style.width='42%';
-  ['year','runtime','quality','recommend','cast','genres','features'].forEach(id => $(id).dispatchEvent(new Event('input')));
+  ['year','runtime','quality','cast','genres','features'].forEach(id => $(id).dispatchEvent(new Event('input')));
   $('synopsis').dispatchEvent(new Event('input')); $('tagline').dispatchEvent(new Event('input'));
+  updateBadges();
+  applyRatio(state.ratio);
 });
 
 $('exportBtn').addEventListener('click', async () => {
@@ -179,5 +372,6 @@ $('exportBtn').addEventListener('click', async () => {
   }
 });
 
+refreshPresetOptions();
 applyRatio(state.ratio);
 setTimeout(fitPreview, 50);
